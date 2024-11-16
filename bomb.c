@@ -250,24 +250,24 @@ void phase_6(undefined4 param_1)
 {
   int *piVar1;
   int iVar2;
-  undefined1 *puVar3;
+  undefined1 *tmplist;
   int *piVar4;
   int iVar5;
-  undefined1 *local_38;
+  undefined1 *list;
   int *local_34;
   int local_30 [5];
-  int local_1c [6];
+  int input [6];
   
-  local_38 = node1;
-  read_six_numbers(param_1,local_1c);
+  list = node1;
+  read_six_numbers(param_1,input);
   iVar5 = 0;
   do {
     iVar2 = iVar5;
-    if (5 < local_1c[iVar5] - 1U) {
+    if (5 < input[iVar5] - 1U) {
       explode_bomb();
     }
     while (iVar2 = iVar2 + 1, iVar2 < 6) {
-      if (local_1c[iVar5] == local_1c[iVar2]) {
+      if (input[iVar5] == input[iVar2]) {
         explode_bomb();
       }
     }
@@ -276,14 +276,14 @@ void phase_6(undefined4 param_1)
   iVar5 = 0;
   do {
     iVar2 = 1;
-    puVar3 = local_38;
-    if (1 < local_1c[iVar5]) {
+    tmplist = list;
+    if (1 < input[iVar5]) {
       do {
-        puVar3 = *(undefined1 **)(puVar3 + 8);
+        tmplist = *(undefined1 **)(tmplist + 8); // tmplist = tmplist->next
         iVar2 = iVar2 + 1;
-      } while (iVar2 < local_1c[iVar5]);
+      } while (iVar2 < input[iVar5]);
     }
-    local_30[iVar5 + -1] = (int)puVar3;
+    local_30[iVar5 + -1] = (int)tmplist;
     iVar5 = iVar5 + 1;
   } while (iVar5 < 6);
   iVar5 = 1;

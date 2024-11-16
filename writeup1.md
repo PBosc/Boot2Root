@@ -159,3 +159,26 @@ Fifth phase is encrypting the string we give it and compares the output with "gi
 opekmq
 
 Phase 6 is ennoying, doing it later, bye
+
+We can figure out it is doing stuff with a 6 element linked list that is loaded in memory.
+With gdb, we try to find what is the content of the linked list and we get :
+
+0x804b26c <node1>:      0x000000fd      0x00000001      0x0804b260
+
+0x804b260 <node2>:      0x000002d5      0x00000002      0x0804b254
+
+0x804b254 <node3>:      0x0000012d      0x00000003      0x0804b248
+
+0x804b248 <node4>:      0x000003e5      0x00000004      0x0804b23c
+
+0x804b23c <node5>:      0x000000d4      0x00000005      0x0804b230
+
+0x804b230 <node6>:      0x000001b0      0x00000006      0x00000000
+
+it seems like the linked list contains 3 items : data, index and next
+
+converted to ints, the linked list looks like :
+
+253 -> 725 -> 301 -> 997 -> 212 -> 432
+
+The phase waits for 6 ints input and first checks that there is no duplicates and that all numbers are between 1 and 6
