@@ -248,61 +248,61 @@ void phase_5(int param_1)
 void phase_6(undefined4 param_1)
 
 {
+  int i;
+  int j;
   int *piVar1;
-  int iVar2;
   undefined1 *tmplist;
   int *piVar4;
-  int iVar5;
   undefined1 *list;
   int *local_34;
-  int local_30 [5];
+  int sorted_list [5];
   int input [6];
   
   list = node1;
   read_six_numbers(param_1,input);
-  iVar5 = 0;
-  do {
-    iVar2 = iVar5;
-    if (5 < input[iVar5] - 1U) {
+  i = 0;
+  do {   // check for duplicates in the array and check that no item in array is > 6
+    j = i;
+    if (5 < input[i] - 1U) {
       explode_bomb();
     }
-    while (iVar2 = iVar2 + 1, iVar2 < 6) {
-      if (input[iVar5] == input[iVar2]) {
+    while (j = j + 1, j < 6) {
+      if (input[i] == input[j]) {
         explode_bomb();
       }
     }
-    iVar5 = iVar5 + 1;
-  } while (iVar5 < 6);
-  iVar5 = 0;
+    i = i + 1;
+  } while (i < 6);
+  i = 0;
   do {
-    iVar2 = 1;
+    j = 1;
     tmplist = list;
-    if (1 < input[iVar5]) {
+    if (1 < input[i]) {
       do {
         tmplist = *(undefined1 **)(tmplist + 8); // tmplist = tmplist->next
-        iVar2 = iVar2 + 1;
-      } while (iVar2 < input[iVar5]);
+        j = j + 1;
+      } while (j < input[i]);
     }
-    local_30[iVar5 + -1] = (int)tmplist;
-    iVar5 = iVar5 + 1;
-  } while (iVar5 < 6);
-  iVar5 = 1;
+    sorted_list[i - 1] = (int)tmplist;
+    i = i + 1;
+  } while (i < 6);
+  i = 1;
   piVar4 = local_34;
   do {
-    piVar1 = (int *)local_30[iVar5 + -1];
+    piVar1 = (int *)sorted_list[i - 1];
     piVar4[2] = (int)piVar1;
-    iVar5 = iVar5 + 1;
+    i = i + 1;
     piVar4 = piVar1;
-  } while (iVar5 < 6);
+  } while (i < 6);
   piVar1[2] = 0;
-  iVar5 = 0;
+  i = 0;
   do {
     if (*local_34 < *(int *)local_34[2]) {
       explode_bomb();
     }
     local_34 = (int *)local_34[2];
-    iVar5 = iVar5 + 1;
-  } while (iVar5 < 5);
+    i = i + 1;
+  } while (i < 5);
   return;
 }
 
