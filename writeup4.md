@@ -1,7 +1,23 @@
-Same thing as in writeup1 until we get to zaz
+# Challenge – ret2shellcode (Shellcode in ENV)
 
-Then we exploit the binary but by using a shellcode in env instead of using the system function from libc
+## Étapes
 
-Run the script exploit-ret2shellcode.py
+### 1. Accès
+Même procédure que dans **writeup1** jusqu’à obtenir l’accès à l’utilisateur `zaz`.
 
-We are root !
+---
+
+### 2. Exploit (shellcode via variable d’environnement)
+Exploitation du binaire en injectant le shellcode **dans l’environnement** (au lieu d’appeler `system` depuis la libc).
+
+```bash
+python exploit-ret2shellcode.py
+```
+
+---
+
+### Résultat
+```
+root@<target>#
+```
+Root obtenu ✅

@@ -1,13 +1,39 @@
-Here we are going to try to exploit the binary with a rop chain
+# Challenge – Exploitation par ROP Chain
 
-Before begining we do the same thing as in writeup1 until we get ssh connection to zaz.
+## Étapes
 
-First we find the libc version becaue there is not enought gadgets in the binary
+### 1. Connexion SSH à `zaz`
+Procéder comme dans **writeup1** jusqu’à obtenir l’accès SSH.
 
-libc is located at /lib/i386-linux-gnu/libc.so.6
+---
 
-It is in version 2.15
+### 2. Identifier la version de `libc`
+```bash
+ls -l /lib/i386-linux-gnu/libc.so.6
+```
+Résultat :
+```
+Version 2.15
+```
 
-We download it with scp and run the script exploit-ROP.py to exploit a ROP chain
+---
 
-We are root !
+### 3. Télécharger la libc
+```bash
+scp zaz@<target-ip>:/lib/i386-linux-gnu/libc.so.6 .
+```
+
+---
+
+### 4. Lancer l’exploit ROP
+```bash
+python exploit-ROP.py
+```
+
+---
+
+### Résultat
+```
+root@<target>#
+```
+Accès root obtenu ✅

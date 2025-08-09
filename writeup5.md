@@ -1,11 +1,51 @@
-linux kernel vulrability -> pkemn.c
+# Linux Kernel Vulnerability — `pkemn.c` (Dirty COW / COW race)
 
-It exploits a race condition in the Linux kernel’s copy-on-write (COW) mechanism for memory.
+## Summary
+- Exploits a **race condition** in the Linux kernel **copy‑on‑write (COW)**.
+- Allows an **unprivileged user to write to read‑only memory mappings**.
+- Can **modify protected files** (e.g. `/etc/passwd`) and **escalate to root**.
+- Local privilege escalation on many **older Linux kernels** (a.k.a. *Dirty COW*).
 
-This flaw lets an unprivileged user write to read-only memory mappings.
+---
 
-By abusing this, the exploit can modify protected files (like /etc/passwd).
+## Minimal Steps
 
-This allows the attacker to escalate privileges, typically gaining root access.
+### 1) Check kernel (likely vulnerable if old)
+```bash
+uname -a
+cat /proc/version
+```
 
-It’s a local privilege escalation vulnerability affecting many older Linux kernels.
+### 2) Get & compile the exploit
+```bash
+# assuming pkemn.c is in the current dir
+gcc -O2 -pthread -o pkemn pkemn.c
+```
+
+### 3) (Optional) Backup target file if attempting passwd overwrite
+```bash
+cp /etc/passwd /tmp/passwd.bak
+```
+
+### 4) Run exploit
+```bash
+./pkemn
+```
+
+### 5) Verify escalation
+```bash
+id
+whoami
+```
+
+### 6) (Optional) Restore backup
+```bash
+[ -f /tmp/passwd.bak ] && sudo cp /tmp/passwd.bak /etc/passwd
+```
+
+---
+
+## Notes
+- Works by winning a **write‑vs‑COW** race on a read‑only mapping.
+- Typical payloads: writing a new root user line to `/etc/passwd` or patching SUID binaries.
+- Mitigated in patched kernels; ensure you run this only on systems you’re authorized to test.
