@@ -272,16 +272,18 @@ We idenfity 6 open ports:
 The website shows a page with no apparent link to any page. Thus we need to bruteforce and try to find some available pages if they exist.
 
 We are going to use [gobuster](https://github.com/OJ/gobuster) with wordlists from [SecListsi](https://github.com/danielmiessler/SecLists):
+
+Make sure to run on `https` not `http`:
 ```
-➜  tools gobuster dir -u http://192.168.128.2:80 -w /Users/tomgernez/wordlists/SecLists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt -t 50 -k -x php,html,txt -b 404
+➜  Web-Content git:(master) gobuster dir -u https://192.168.128.2 -w common.txt -t 50 -k -x php,html,txt -b 404 2>/dev/null
 ===============================================================
 Gobuster v3.8
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
-[+] Url:                     http://192.168.128.2:80
+[+] Url:                     https://192.168.128.2
 [+] Method:                  GET
 [+] Threads:                 50
-[+] Wordlist:                /Users/tomgernez/wordlists/SecLists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt
+[+] Wordlist:                common.txt
 [+] Negative Status codes:   404
 [+] User Agent:              gobuster/3.8
 [+] Extensions:              php,html,txt
@@ -289,11 +291,13 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
 Starting gobuster in directory enumeration mode
 ===============================================================
-/index.html           (Status: 200) [Size: 1025]
-/forum                (Status: 403) [Size: 286]
-/fonts                (Status: 301) [Size: 314] [--> http://192.168.128.2/fonts/]
-/server-status        (Status: 403) [Size: 294]
-Progress: 882228 / 882228 (100.00%)
+/cgi-bin/             (Status: 403) [Size: 290]
+/cgi-bin/.html        (Status: 403) [Size: 295]
+/forum                (Status: 301) [Size: 316] [--> https://192.168.128.2/forum/]
+/phpmyadmin           (Status: 301) [Size: 321] [--> https://192.168.128.2/phpmyadmin/]
+/server-status        (Status: 403) [Size: 295]
+/webmail              (Status: 301) [Size: 318] [--> https://192.168.128.2/webmail/]
+
 ===============================================================
 Finished
 ===============================================================
@@ -313,6 +317,12 @@ Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Received disconnect from 161.202.39.3
 Oct 5 08:46:01 BornToSecHackMe CRON[7549]: pam_unix(cron:session): session opened for user lmezard by (uid=1040)
 ```
 A user `lmezard` tried mistyped his password `!q\]Ej?*5K5cy*AJ` as a username. Now, enter these credentials in the login page. 
+
+Once you're connected, navigte to the user's page and retrieves its email: `laurie@borntosec.net `. 
+
+You can then log into the webmail (`/webmail`), and access the email `DB Access`, where you'll be greated with a root access to the DB: `root` and password `Fg-'kKXBj87E:aJ$`
+
+Then, connect to the `/phpmyadmin` with these credentials.
 
 
 ifconfig -a
