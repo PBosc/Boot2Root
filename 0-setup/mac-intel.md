@@ -1,9 +1,10 @@
-# VM Configuration
+### VM Configuration
 Configure the VM normally. 
 Before booting, go to Your VM > Network > Adapter 1
 Choose Bridged Adapter, pick the interface your connected to (`en0: Wifi` if in WiFi or `eth0` if ethernet)
 Boot the VM
-# Finding the VM
+
+### Finding the VM
 Since the VM itself doesn't give its IP away, we need to find it. First, run `ifconfig` to get the status of your network interfaces:
 ```
 ifconfig
@@ -56,7 +57,8 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 14.53 seconds
 ```
 This one has, we found the VM
-# Accessing the VM in SSH
+
+### Accessing the VM in SSH
 We start [[Nmap]] in attack mode to have a better understanding:
 ```
 ➜  ~ sudo nmap -A 10.80.248.231
@@ -111,14 +113,15 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 15.56 seconds
 ```
 
-## Nmap Analysis
+#### Nmap Analysis
 There are multiple services running:
 - FTP server: port 21
 - SSH server: port 22
 - HTTP/S server: port 80/443
 - IMAP server: port 143
 - SSL/IMAP server: port 993
-## Website analysis
+
+#### Website analysis
 The website seems somewhat empty. Using [[Gobuster]] with [SecLists](https://github.com/danielmiessler/SecLists)' Common Directory, we get:
 ```
 ➜  wordlists gobuster dir -u http://10.80.248.231 -w SecLists/Discovery/Web-Content/common.txt -t 50
