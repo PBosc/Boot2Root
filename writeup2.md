@@ -1,39 +1,39 @@
-# Challenge – Exploitation par ROP Chain
+# Challenge – ROP Chain Exploitation
 
-## Étapes
+## Steps
 
-### 1. Connexion SSH à `zaz`
-Procéder comme dans **writeup1** jusqu’à obtenir l’accès SSH.
+### 1. SSH connection to `zaz`
+Proceed as in **writeup1** until you obtain SSH access.
 
 ---
 
-### 2. Identifier la version de `libc`
+### 2. Identify the `libc` version
 ```bash
 ls -l /lib/i386-linux-gnu/libc.so.6
 ```
-Résultat :
+Result:
 ```
 Version 2.15
 ```
 
 ---
 
-### 3. Télécharger la libc
+### 3. Download the libc
 ```bash
 scp zaz@<target-ip>:/lib/i386-linux-gnu/libc.so.6 .
 ```
 
 ---
 
-### 4. Lancer l’exploit ROP
+### 4. Launch the ROP exploit
 ```bash
 python exploit-ROP.py
 ```
 
 ---
 
-### Résultat
+### Result
 ```
 root@<target>#
 ```
-Accès root obtenu ✅
+Root access obtained ✅
