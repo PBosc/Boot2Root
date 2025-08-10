@@ -469,6 +469,8 @@ This gives us the password to access account `thor`.
 
 `thor`'s home contains a `turtle` file, that contains instructions for the `turtle` libray of Python, that draws on a Canvas. Run `scripts/turtle_script.py`, and get password `SLASH`, in `md5` that is `646da671ca01bb5d84dbb5fb2238dc8e`
 
+Then, connect as `zaz` with password `646da671ca01bb5d84dbb5fb2238dc8e`.
+
 We have a binary that is owned by `root` and that we can exploit easily byt overriding `eip` with `system` placing `/bin/sh` in the stack before, luckily `/bin/sh` is already in the stack in SHELL env variable
 
 ```bash
