@@ -1,2 +1,1 @@
 pwntools>=4.14.1
-PythonTurtle>=0.3.2
